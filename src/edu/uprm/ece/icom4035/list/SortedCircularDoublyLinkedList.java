@@ -137,6 +137,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 		return null;
 	}
 	@Override
+	
 	public void clear() {
 		Node<E> current = head.getNext();
 		while(current.getNext()!=head) {
