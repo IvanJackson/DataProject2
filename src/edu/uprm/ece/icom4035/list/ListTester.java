@@ -27,7 +27,6 @@ public class ListTester {
 		printList(theList);
 		System.out.println();
 		printReverseList(theList);
-
 	}
 
 	private static void printList(SortedList<String> theList) {
