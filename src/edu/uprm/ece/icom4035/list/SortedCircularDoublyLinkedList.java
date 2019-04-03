@@ -1,19 +1,17 @@
 package edu.uprm.ece.icom4035.list;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 
 public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements SortedList<E> {
 	int size;
-	SortedCircularDoublyLinkedList list;
 	Node<E> head;
+	
 	private static class Node<E>{
 			
 			private E element;
 			private Node<E> next;
 			private Node<E> previous;
-			private Node<E> head;
 			
 			public Node<E> getPrevious() {
 				return previous;
@@ -29,10 +27,10 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 				this.previous = null;
 			}
 			
-			public Node(E e, Node<E> N, Node<E> P) {
+			public Node(E e, Node<E> prev, Node<E> next) {
 				this.element = e;
-				this.next = N;
-				this.previous = P;
+				this.next = next;
+				this.previous = prev;
 			}
 	
 			public E getElement() {
@@ -50,22 +48,53 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 			public void setNext(Node<E> next) {
 				this.next = next;
 			}
+			public void clear() {
+				this.setElement(null);
+				this.setNext(null);
+				this.setPrevious(null);
+			}
 		}
 
 	public SortedCircularDoublyLinkedList(){
-		this.list = new SortedCircularDoublyLinkedList<E>();
 		head = new Node<E>();
 		size=0;
 	}
 	
 	@Override
 	public Iterator<E> iterator() {
-		return new ForwardIterator<E>(head);
+		return new ForwardIterator(head);
 	}
 
 	@Override
 	public boolean add(E obj) {
+		if(this.size()==0) {
+			head.setNext(new Node<E>(obj, head, head));
+			head.setPrevious(head.getNext());
+			this.size++;
+			return true;
+		}
+		Node<E> current = head.getNext();
+		while(current!=head) {
+			if(obj.compareTo(current.getElement())<0||current.getNext()==head){
+//				Node<E> nta = new Node<E>(obj, (current.getNext()==head)?current:current.getPrevious(), (current.getNext()==head)?head:current);
+				Node<E> nta = new Node<E>(obj, (obj.compareTo(current.getElement())<0)?current.getPrevious():current,
+						(obj.compareTo(current.getElement())<0)?current:head);
+				current.setNext(nta);
+				this.size++;
+				if(nta.getNext()==head) head.setPrevious(nta);
+				return true;
+			}
+			else if(obj.compareTo(current.getElement())>=0) current = current.getNext();
+		}
 		return false;
+//		while(obj.compareTo(current.getElement())>0) {
+//			current = current.getNext();
+//		}
+//		Node<E> nta = new Node<E>(obj, current, current.getNext());
+//		current.setNext(nta);
+//		if(nta.getNext()!=null) nta.getNext().setPrevious(nta);
+//		this.size++;
+//		return true;
 	}
 
 	@Override
@@ -75,26 +104,33 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 
 	@Override
 	public boolean remove(E obj) {
-		// TODO Auto-generated method stub
+		if(this.contains(obj)) remove(this.firstIndex(obj));
+		this.size--;
 		return false;
 	}
 
 	@Override
 	public boolean remove(int index) {
-		// TODO Auto-generated method stub
-		return false;
+		if(index>=this.size()) return false;
+		Node<E> ntr = findNode(index);
+		ntr.getPrevious().setNext(ntr.getNext());
+		ntr.getNext().setPrevious(ntr.getPrevious());
+		ntr.clear();
+		this.size--;
+		return true;
 	}
 
 	@Override
 	public int removeAll(E obj) {
-		Node<E> current =head;
+		Node<E> current =head.getNext();
 		int copiesErased=0;
-		while(current.getNext()!=head) {
+		while(current!=head) {
 			if(current.getElement()==obj) {
-				Node<E> newNext=current.getNext().getNext();
-				current.setNext(newNext);
-				newNext.setPrevious(current);
-				current = current.getNext();
+				Node<E> newNext=current.getNext();
+				current.getPrevious().setNext(newNext);
+				newNext.setPrevious(current.getPrevious());
+				current.clear();
+				current = newNext;
 				this.size--;
 				copiesErased++;
 			}
@@ -114,40 +150,30 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 
 	@Override
 	public E get(int index) throws IndexOutOfBoundsException{
-		Node<E> current = head.getNext();
-		int counter=0;
 		if(index>this.size()||index<0) throw new IndexOutOfBoundsException("Index is greater than the size of the list");
-		while(current.getNext()!=head) {
-			if(counter==index) return current.getElement();
-			current = current.getNext();
-			counter++;
-		}
-		return null;
+		return findNode(index).getElement();
 	}
 	
 	private Node<E> findNode(int index) throws IndexOutOfBoundsException{
 		Node<E> current = head.getNext();
 		int counter=0;
 		if(index>this.size()||index<0) throw new IndexOutOfBoundsException("Index is greater than the size of the list");
-		while(current.getNext()!=head) {
+		while(current!=head) {
 			if(counter==index) return current;
 			current = current.getNext();
 			counter++;
 		}
 		return null;
 	}
-	@Override
 	
+	@Override
 	public void clear() {
 		Node<E> current = head.getNext();
-		while(current.getNext()!=head) {
-			current.setElement(null);
-			current.setPrevious(null);
+		while(current!=head) {
 			current=current.getNext();
-		}
-		current.setElement(null);
-		current.setPrevious(null);
-		
+			current.getPrevious().clear();;
+
+		}		
 	}
 
 	@Override
@@ -164,33 +190,28 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	@Override
 	public Iterator<E> iterator(int index) {
 		Node<E> current = this.findNode(index);
-		return new ForwardIterator<E>(current);
+		return new ForwardIterator(current);
 	}
 
-	private class ForwardIterator<E> implements Iterator<E>{
+	private class ForwardIterator implements Iterator<E>{
 		Node<E> head;
 		Node<E> current;
 		
 		public ForwardIterator(Node<E> head){
 			this.head = head;
-			this.current=this.head;
+			this.current=head.getNext();
 		}
 		@Override
 		public boolean hasNext() {
-			return current.getNext()!=head;
+			return current!=head;
 		}
 
 		@Override
 		public E next() {
 			if(hasNext()) {
-				if(current.getElement()==null) {
-					current = current.getNext();
-					return current.getElement();
-				}
-				else
-					current = current.getNext();
-					return current.getPrevious().getElement();
-				}
+				current = current.getNext();
+				return current.getPrevious().getElement();
+			}
 			else return null;
 			}
 		}
@@ -199,7 +220,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	public int firstIndex(E e) {
 		Node<E> current = head.getNext();
 		int index =0;
-		while(current.getNext()!=head) {
+		while(current!=head) {
 			if(current.getElement()==e) return index;
 			index++;
 		}
@@ -210,7 +231,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	public int lastIndex(E e) {
 		Node<E> current = head.getPrevious();
 		int index =0;
-		while(current.getPrevious()!=head) {
+		while(current!=head) {
 			if(current.getElement()==e) return index;
 			index++;
 		}
@@ -222,7 +243,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	}
 	
 	
-	private class BackwardsIterator<E> implements ReverseIterator<E>{
+	private class BackwardsIterator implements ReverseIterator<E>{
 		Node<E> head;
 		Node<E> current;
 		
@@ -252,13 +273,13 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	
 	@Override
 	public ReverseIterator<E> reverseIterator() {
-		return new BackwardsIterator<E>(head);
+		return new BackwardsIterator(head);
 	}
 
 	@Override
 	public ReverseIterator<E> reverseIterator(int index) {
 		Node<E> current = this.findNode(index);
-		return new BackwardsIterator<E>(current);
+		return new BackwardsIterator(current);
 	}
 	
 

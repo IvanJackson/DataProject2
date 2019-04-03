@@ -12,7 +12,7 @@ public class ListTester {
 		theList.add("Ron");
 		printList(theList);
 		theList.add("Jil");
-		System.out.println("Element 0 is Bob: " + theList.get(0).equals("Bob"));
+ 		System.out.println("Element 0 is Bob: " + theList.get(0).equals("Bob"));
 		System.out.println("Element 1 is Jil: " + theList.get(1).equals("Jil"));
 		theList.add("Amy");
 		System.out.println("First element is Amy: " + theList.first().equals("Amy"));
