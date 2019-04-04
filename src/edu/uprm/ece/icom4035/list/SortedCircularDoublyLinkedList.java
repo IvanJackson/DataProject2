@@ -10,26 +10,26 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 
 		private E element;
 		private Node<E> next;
-		private Node<E> previous;
+		private Node<E> Prev;
 
-		public Node<E> getPrevious() {
-			return previous;
+		public Node<E> getPrev() {
+			return Prev;
 		}
 
-		public void setPrevious(Node<E> previous) {
-			this.previous = previous;
+		public void setPrev(Node<E> Prev) {
+			this.Prev = Prev;
 		}
 
 		public Node() {
 			this.element = null;
 			this.next = null;
-			this.previous = null;
+			this.Prev = null;
 		}
 
 		public Node(E e, Node<E> prev, Node<E> next) {
 			this.element = e;
 			this.next = next;
-			this.previous = prev;
+			this.Prev = prev;
 		}
 
 		public E getElement() {
@@ -51,7 +51,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 		public void clear() {
 			this.setElement(null);
 			this.setNext(null);
-			this.setPrevious(null);
+			this.setPrev(null);
 		}
 
 	}
@@ -70,7 +70,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	public boolean add(E obj) {
 		if (this.size() == 0) {
 			head.setNext(new Node<E>(obj, head, head));
-			head.setPrevious(head.getNext());
+			head.setPrev(head.getNext());
 			this.currentSize++;
 			return true;
 		}
@@ -80,10 +80,10 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 				current = current.getNext();
 			else {
 				Node<E> nta2 = new Node<E>(obj,
-						(obj.compareTo(current.getElement()) < 0) ? current.getPrevious() : current,
+						(obj.compareTo(current.getElement()) < 0) ? current.getPrev() : current,
 						(obj.compareTo(current.getElement()) < 0) ? current : head);
-				nta2.getPrevious().setNext(nta2);
-				nta2.getNext().setPrevious(nta2);
+				nta2.getPrev().setNext(nta2);
+				nta2.getNext().setPrev(nta2);
 				this.currentSize++;
 				return true;
 			}
@@ -107,8 +107,8 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 	public boolean remove(int index) throws IndexOutOfBoundsException{
 		if (index >= this.size()) throw new IndexOutOfBoundsException("Index is greater than the size of the list");
 		Node<E> ntr = findNode(index);
-		ntr.getPrevious().setNext(ntr.getNext());
-		ntr.getNext().setPrevious(ntr.getPrevious());
+		ntr.getPrev().setNext(ntr.getNext());
+		ntr.getNext().setPrev(ntr.getPrev());
 		ntr.clear();
 		this.currentSize--;
 		return true;
@@ -121,8 +121,8 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 		while (current != head) {
 			if (current.getElement() == obj) {
 				Node<E> newNext = current.getNext();
-				current.getPrevious().setNext(newNext);
-				newNext.setPrevious(current.getPrevious());
+				current.getPrev().setNext(newNext);
+				newNext.setPrev(current.getPrev());
 				current.clear();
 				current = newNext;
 				this.currentSize--;
@@ -140,7 +140,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 
 	@Override
 	public E last() {
-		return (this.size()==0)? null:head.getPrevious().getElement();
+		return (this.size()==0)? null:head.getPrev().getElement();
 	}
 
 	@Override
@@ -169,7 +169,7 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 		Node<E> current = head.getNext();
 		while (current != head) {
 			current = current.getNext();
-			current.getPrevious().clear();
+			current.getPrev().clear();
 			this.currentSize--;
 
 		}
@@ -255,13 +255,13 @@ public class SortedCircularDoublyLinkedList<E extends Comparable<E>> implements 
 
 		@Override
 		public boolean hasPrevious() {
-			return current.getPrevious().getElement() != null;
+			return current.getPrev().getElement() != null;
 		}
 
 		@Override
 		public E previous() {
 			if (hasPrevious()) {
-				current = current.getPrevious();
+				current = current.getPrev();
 				return current.getElement();
 			} 
 			else return null;
